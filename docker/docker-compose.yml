@@ -4,11 +4,11 @@ services:
     container_name: mlflow-replay
     ports:
       - "8000:8000"
-    volumes:     
-      - /mnt/public-metrics:/mlflow/mlruns/public:ro  
+    volumes:
+      - /mnt/public-metrics:/mlflow/mlruns:ro  
     command:
       - mlflow
       - server
-      - --backend-store-uri=/mlflow/mlruns
-      - --default-artifact-root=/mlflow/mlruns/public
+      - --backend-store-uri=/mlflow/mlruns    
+      - --default-artifact-root=/mlflow/mlruns
       - --host=0.0.0.0
