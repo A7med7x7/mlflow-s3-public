@@ -1,0 +1,14 @@
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: mlflow-replay
+    ports:
+      - "8000:8000"
+    volumes:     
+      - /mnt/public-metrics:/mlflow/mlruns/public:ro  
+    command:
+      - mlflow
+      - server
+      - --backend-store-uri=/mlflow/mlruns
+      - --default-artifact-root=/mlflow/mlruns/public
+      - --host=0.0.0.0
