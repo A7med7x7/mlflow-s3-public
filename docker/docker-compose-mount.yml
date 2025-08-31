@@ -7,17 +7,11 @@ services:
     volumes:
       - /mnt/public-metrics:/mlflow/metrics:
       - /mnt/public-artifacts:/mlflow/artifacts:
-    environment:
-      - MLFLOW_S3_ENDPOINT_URL=
-      - AWS_ACCESS_KEY_ID=
-      - AWS_SECRET_ACCESS_KEY=
-      - AWS_REQUEST_CHECKSUM_CALCULATION=WHEN_REQUIRED
-      - AWS_RESPONSE_CHECKSUM_VALIDATION=WHEN_REQUIRED  
     command:
       - mlflow
       - server
       - --backend-store-uri=/mlflow/metrics
-      - -- artifacts-destination=s3://$CONTAINER_NAME
+      - --default-artifact=/mlflow/artifacts
       - --serve-artifacts
       - --host=0.0.0.0
       - --port=8000
