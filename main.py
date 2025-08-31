@@ -46,20 +46,19 @@ def main():
     # Generate mount shell script in $HOME
     mount_script = f"""#!/bin/bash
 mkdir -p /mnt/public-metrics /mnt/public-artifacts
+sudo chown -R cc /mnt/public-artifacts
+sudo chown -R cc /mnt/public-metrics
 
 rclone mount rclone_s3:{container1_name} /mnt/public-metrics \\
-    --config /home/cc/.config/rclone/rclone.conf \\
-    --vfs-cache-mode full \\
+    --allow-other \\ 
     --daemon \\
-    --allow-non-empty \\
-    --allow-other
+    --vfs-cache-mode writes \\
+    
 
 rclone mount rclone_s3:{container2_name} /mnt/public-artifacts \\
-    --config /home/cc/.config/rclone/rclone.conf \\
-    --vfs-cache-mode full \\
+    --allow-other \\ 
     --daemon \\
-    --allow-non-empty \\
-    --allow-other
+    --vfs-cache-mode writes \\
     
 echo "containers mounted at /mnt/public-metrics and /mnt/public-artifacts"
 """
@@ -67,7 +66,7 @@ echo "containers mounted at /mnt/public-metrics and /mnt/public-artifacts"
     with open(script_path, "w") as f:
         f.write(mount_script)
     os.chmod(script_path, 0o755)
-    print(f"Mount script written to {script_path}")
+    print(f"✅ Mount script written to {script_path}")
     print(f"Run it using: bash {script_path}")
 
 if __name__ == "__main__":
