@@ -98,7 +98,7 @@ echo "✅ The .env file has been generated successfully at: $ENV_FILE"
 """
 
     # Save the mount script
-    mount_script_path = os.path.expanduser("scripts/mount_public_swift.sh")
+    mount_script_path = os.path.expanduser("scripts/mount_public.sh")
     os.makedirs(os.path.dirname(mount_script_path), exist_ok=True)
     with open(mount_script_path, "w") as f:
         f.write(mount_script)
