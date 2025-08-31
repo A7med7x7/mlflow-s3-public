@@ -26,10 +26,10 @@ endpoint = {endpoint}
     
     with open(RCLONE_CONF_PATH, "w") as f:
         f.write(config_content)
-    print(f"Rclone Swift config written to {RCLONE_CONF_PATH}")
+    print(f"Rclone s3 config written to {RCLONE_CONF_PATH}")
 
 def main():
-    print("=== setup rclone for public object store container ===")
+    print("=== setup rclone and .env for public object store containers ===")
     
     container1 = input("🦎 Enter metrices container name or full URL: ").strip()
     container2 = input("🦎 Enter artifacts container name or full URL: ").strip()
@@ -37,9 +37,9 @@ def main():
     container1_name = get_container_name(container1)
     container2_name = get_container_name(container2)
     
-    ec2_id = input("🦎 Enter Swift application_credential_id: ").strip()
-    ec2_secret = getpass.getpass("🦎 Enter Swift application_credential_secret (it will not be visible when typing): ").strip()
-    endpoint = input("🦎 Enter Swift auth URL (e.g., https://chi.uc.chameleoncloud.org:5000/v3): ").strip()
+    ec2_id = input("🦎 Enter EC2 credentials access id: ").strip()
+    ec2_secret = getpass.getpass("🦎 Enter EC2 credentials access secret (it will not be visible when typing): ").strip()
+    endpoint = input("🦎 Enter Swift auth URL (e.g., https://chi.uc.chameleoncloud.org:7480): ").strip()
     
     write_rclone_swift_config(ec2_id, ec2_secret, endpoint)
     
