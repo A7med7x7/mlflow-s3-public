@@ -31,8 +31,8 @@ endpoint = {endpoint}
 def main():
     print("=== setup rclone for public object store container ===")
     
-    container1 = input("Enter metrices container name or full URL: ").strip()
-    container2 = input("Enter artifacts container name or full URL: ").strip()
+    container1 = input("🦎 Enter metrices container name or full URL: ").strip()
+    container2 = input("🦎 Enter artifacts container name or full URL: ").strip()
     
     container1_name = get_container_name(container1)
     container2_name = get_container_name(container2)
@@ -45,6 +45,7 @@ def main():
     
     # Generate mount shell script in $HOME
     mount_script = f"""#!/bin/bash
+sudo sed -i '/^#user_allow_other/s/^#//' /etc/fuse.conf
 mkdir -p /mnt/public-metrics /mnt/public-artifacts
 sudo chown -R cc /mnt/public-artifacts
 sudo chown -R cc /mnt/public-metrics
@@ -62,12 +63,48 @@ rclone mount rclone_s3:{container2_name} /mnt/public-artifacts \\
     
 echo "containers mounted at /mnt/public-metrics and /mnt/public-artifacts"
 """
-    script_path = os.path.expanduser("/mnt/mount_public_swift.sh")
-    with open(script_path, "w") as f:
-        f.write(mount_script)
-    os.chmod(script_path, 0o755)
-    print(f"✅ Mount script written to {script_path}")
-    print(f"Run it using: bash {script_path}")
+    generate_env = f"""#!/bin/bash
+
+REMOTE_NAME="rclone_s3"
+RCLONE_CONF="${{HOME}}/.config/rclone/rclone.conf"
+ENV_DIR="${{HOME}}"
+ENV_FILE="${{ENV_DIR}}/.env"
+
+if [[ ! -f "$RCLONE_CONF" ]]; then
+    echo "❌ rclone config not found at $RCLONE_CONF"
+    exit 1
+fi
+
+# Extract values from rclone.conf (robust to whitespace)
+S3_ACCESS_KEY=$(awk -F '=' '/\\[rclone_s3\\]/{{a=1}} a && /access_key_id/ {{gsub(/ /,"",$2); print $2; exit}}' "$RCLONE_CONF")
+S3_SECRET_ACCESS_KEY=$(awk -F '=' '/\\[rclone_s3\\]/{{a=1}} a && /secret_access_key/ {{gsub(/ /,"",$2); print $2; exit}}' "$RCLONE_CONF")
+S3_ENDPOINT_URL=$(awk -F '=' '/\\[rclone_s3\\]/{{a=1}} a && /endpoint/ {{gsub(/ /,"",$2); print $2; exit}}' "$RCLONE_CONF")
+
+CONTAINER_NAME="{container2_name}"
+
+# Get public IP
+HOST_IP=$(curl -s ifconfig.me)
+
+# Creating .env file
+cat <<EOF > "$ENV_FILE"
+S3_ACCESS_KEY=${{S3_ACCESS_KEY}}
+S3_SECRET_ACCESS_KEY=${{S3_SECRET_ACCESS_KEY}}
+HOST_IP=${{HOST_IP}}
+CONTAINER_NAME=${{CONTAINER_NAME}}
+S3_ENDPOINT_URL=${{S3_ENDPOINT_URL}}
+EOF
+
+echo "✅ The .env file has been generated successfully at: $ENV_FILE"
+"""
+
+    # Save the generate_env script
+    env_script_path = os.path.expanduser("scripts/generate_env.sh")
+    os.makedirs(os.path.dirname(env_script_path), exist_ok=True)
+    with open(env_script_path, "w") as f:
+        f.write(generate_env)
+    os.chmod(env_script_path, 0o755)
+    print(f"✅ Environment script written to {env_script_path}")
+    print(f"Run it using: bash {env_script_path}")
 
 if __name__ == "__main__":
     main()
