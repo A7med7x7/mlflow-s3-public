@@ -4,6 +4,7 @@ services:
     container_name: mlflow-replay
     ports:
       - "8000:8000"
+    restart: always
     volumes:
       - /mnt/public-metrics:/mlflow/metrics:
       - /mnt/public-artifacts:/mlflow/artifacts:
