@@ -1,4 +1,4 @@
-# MLflow Public Read-Only
+# MLflow Public Read 
 
 This repository provides an MLflow server setup that allows you to explore experiment artifacts from public object store containers hosted on [Chameleon Cloud](https://chameleoncloud.org). It's for viewing and analyzing previous experiments.
 
