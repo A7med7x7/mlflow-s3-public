@@ -26,7 +26,7 @@ endpoint = {endpoint}
     
     with open(RCLONE_CONF_PATH, "w") as f:
         f.write(config_content)
-    print(f"Rclone s3 config written to {RCLONE_CONF_PATH}")
+    print(f"✅ Rclone s3 config written to {RCLONE_CONF_PATH}")
 
 def main():
     print("=== setup rclone and .env for public object store containers ===")
@@ -39,29 +39,27 @@ def main():
     
     ec2_id = input("🦎 Enter EC2 credentials access id: ").strip()
     ec2_secret = getpass.getpass("🦎 Enter EC2 credentials access secret (it will not be visible when typing): ").strip()
-    endpoint = input("🦎 Enter Swift auth URL (e.g., https://chi.uc.chameleoncloud.org:7480): ").strip()
+    endpoint = input("🦎 Enter ENDPOINT URL (e.g., https://chi.uc.chameleoncloud.org:7480): ").strip()
     
     write_rclone_swift_config(ec2_id, ec2_secret, endpoint)
     
     # Generate mount shell script in $HOME
     mount_script = f"""#!/bin/bash
 sudo sed -i '/^#user_allow_other/s/^#//' /etc/fuse.conf
-mkdir -p /mnt/public-metrics /mnt/public-artifacts
-sudo chown -R cc /mnt/public-artifacts
-sudo chown -R cc /mnt/public-metrics
+sudo mkdir -p /mnt/public-metrics /mnt/public-artifacts
+sudo chown $USER:$USER /mnt/public-metrics /mnt/public-artifacts
 
 rclone mount rclone_s3:{container1_name} /mnt/public-metrics \\
     --allow-other \\ 
     --daemon \\
     --vfs-cache-mode writes \\
-    
 
 rclone mount rclone_s3:{container2_name} /mnt/public-artifacts \\
     --allow-other \\ 
     --daemon \\
     --vfs-cache-mode writes \\
     
-echo "containers mounted at /mnt/public-metrics and /mnt/public-artifacts"
+echo "✅ containers mounted at /mnt/public-metrics and /mnt/public-artifacts successfully"
 """
     generate_env = f"""#!/bin/bash
 
@@ -97,9 +95,12 @@ EOF
 echo "✅ The .env file has been generated successfully at: $ENV_FILE"
 """
 
+    repo_root = os.path.dirname(os.path.abspath(__file__))
+    scripts_dir = os.path.join(repo_root, "scripts")
+    os.makedirs(scripts_dir, exist_ok=True)
+
     # Save the mount script
-    mount_script_path = os.path.expanduser("scripts/mount_public.sh")
-    os.makedirs(os.path.dirname(mount_script_path), exist_ok=True)
+    mount_script_path = os.path.join(scripts_dir, "mount_public.sh")
     with open(mount_script_path, "w") as f:
         f.write(mount_script)
     os.chmod(mount_script_path, 0o755)
@@ -107,8 +108,7 @@ echo "✅ The .env file has been generated successfully at: $ENV_FILE"
     print(f"Run it using: bash {mount_script_path}")
 
     # Save the generate_env script
-    env_script_path = os.path.expanduser("scripts/generate_env.sh")
-    os.makedirs(os.path.dirname(env_script_path), exist_ok=True)
+    env_script_path = os.path.join(scripts_dir, "generate_env.sh")
     with open(env_script_path, "w") as f:
         f.write(generate_env)
     os.chmod(env_script_path, 0o755)
